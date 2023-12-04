@@ -1,48 +1,16 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { Container } from "semantic-ui-react";
-import { Activity } from "../models/Activity";
 import NavBar from "./NavBar";
-import ActivityDashboard from "../../features/activities/dashboard/ActivityDashboard";
-import { v4 as uuid } from "uuid";
-import agent from "../api/agent";
-import LoadingComponent from "./LoadingComponent";
-import { useStore } from "../stores/store";
 import { observer } from "mobx-react-lite";
+import { Outlet, useLocation } from "react-router-dom";
+import HomePage from "../../features/home/HomePage";
 
-function App() { 
-
-  const {activityStore} = useStore(); 
-
+function App() {
+  const location = useLocation();
   //const [activities, setActivities] = useState<Activity[]>([]);
   //const [loading, setLoading] = useState(true);
   //const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    /*axios
-        .get<Activity[]>("http://localhost:5000/api/activities")
-        .then((response) => {
-          console.log(response);
-          setActivities(response.data);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    agent.activities.list().then((response) => {
-      let Activities: Activity[] = [];
-      response.forEach((actvity) => {
-        actvity.date = actvity.date.split("T")[0];
-        Activities.push(actvity);
-      });
-      setActivities(Activities);
-      setLoading(false);
-    });*/
-  
-     activityStore.loadActivities()
-  }, [activityStore]);
-
-
-/*
+  /*
   function handleSelecteActivity(id: string) {
     setSelectedActivity(activities.find((x) => x.id == id));
   }
@@ -101,20 +69,20 @@ function App() {
 
   */
 
-  
-
- 
-
-  if (activityStore.loadingInitial) return <LoadingComponent content="loading app..." />;
-
   return (
     <>
-      <NavBar />
-      <Container style={{ marginTop: "7em" }}>
-        <ActivityDashboard  />
-      </Container>
+      {location.pathname === "/" ? (
+        <HomePage />
+      ) : (
+        <>
+          <NavBar />
+          <Container style={{ marginTop: "7em" }}>
+            <Outlet />
+          </Container>
+        </>
+      )}
     </>
   );
 }
 
-export default  observer(App);
+export default observer(App);

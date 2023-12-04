@@ -1,4 +1,4 @@
-import {makeAutoObservable, runInAction} from "mobx"
+import {keys, makeAutoObservable, runInAction} from "mobx"
 import { Activity } from "../models/Activity"
 import agent from "../api/agent"
 import {v4 as uuid} from "uuid"
@@ -9,7 +9,7 @@ export default class ActivityStore {
      selectedActivity :  Activity | undefined = undefined
      editMode = false
      loading = false
-     loadingInitial = true
+     loadingInitial = false
 
 
      /*equivalent of runInAction is manage this.loadingInitial in an action
@@ -34,13 +34,24 @@ export default class ActivityStore {
        )
     } 
 
+    get groupedActivities()
+    {
+      return Object.entries(
+         this.activityByDate.reduce((activities, activity) =>{
+             const date = activity.date;
+             activities[date] = activities[date] ? [...activities[date], activity] : [activity]
+             return activities;
+         }, {} as {[key : string] : Activity[] })
+      )
+    }
+
     loadActivities = async () => {
        //this.loadingInitial = true;
+       this.setLoadingInitial(true)
        try {
           const activities = await agent.activities.list();
           activities.forEach((activity) => {
-            activity.date = activity.date.split("T")[0];
-            this.activityRegistry.set(activity.id,activity)    // <---this.activities.push(actvity);
+             this.setActivity(activity);
             //this.loadingInitial = false
             this.setLoadingInitial(false)
           });
@@ -49,6 +60,38 @@ export default class ActivityStore {
           console.log(error)
           this.setLoadingInitial(false)
        }
+    }
+
+    loadActivity = async (id: string) => {
+       let activity = this.getActivity(id);
+       if(activity) {
+         this.selectedActivity = activity
+         return activity
+      }
+       else{
+         this.setLoadingInitial(true)
+          try {
+            activity = await agent.activities.details(id)
+            this.setActivity(activity);
+            runInAction(() => this.selectedActivity = activity)
+            this.setLoadingInitial(false);
+            return activity
+          } catch (error) {
+            console.log(error);
+            this.setLoadingInitial(false);
+          }
+       }
+    }
+
+    private setActivity = (activity : Activity) => {
+      activity.date = activity.date.split("T")[0];
+      this.activityRegistry.set(activity.id,activity)    // <---this.activities.push(actvity);
+    }
+
+
+    private getActivity = ( id :string) =>
+    {
+      return this.activityRegistry.get(id);
     }
 
       setLoadingInitial = (state :boolean) => {
