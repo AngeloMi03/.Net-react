@@ -30,9 +30,8 @@ export default observer(function ActivityDashboard() {
       setActivities(Activities);
       setLoading(false);
     });*/
-  
      if(activityRegistry.size <= 1) loadActivities()
-  }, [activityStore,activityRegistry.size,loadActivities]);
+  }, [activityStore]);
 
   if (activityStore.loadingInitial) return <LoadingComponent content="loading app..." />;
 

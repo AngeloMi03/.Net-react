@@ -49,13 +49,13 @@ export default class ActivityStore {
        //this.loadingInitial = true;
        this.setLoadingInitial(true)
        try {
-          const activities = await agent.activities.list();
-          activities.forEach((activity) => {
-             this.setActivity(activity);
-            //this.loadingInitial = false
-            this.setLoadingInitial(false)
-          });
-          
+          const Activities = await agent.activities.list();
+          console.log("activity store " + Activities.length)
+          Activities.forEach((activity) => {
+               this.setActivity(activity);
+              //this.loadingInitial = false
+              this.setLoadingInitial(false)
+            });    
        } catch (error) {
           console.log(error)
           this.setLoadingInitial(false)
@@ -63,7 +63,7 @@ export default class ActivityStore {
     }
 
     loadActivity = async (id: string) => {
-       let activity = this.getActivity(id);
+       let activity = this.getActivity(id); 
        if(activity) {
          this.selectedActivity = activity
          return activity
@@ -165,7 +165,7 @@ export default class ActivityStore {
          try {
             await agent.activities.delete(id)
             this.activityRegistry.delete(id);  // <--  this.activities = [...this.activities.filter(x => x.id != id)];
-            if(this.selectedActivity?.id == id) this.handleCancelSelectedActivity();
+            if(this.selectedActivity?.id === id) this.handleCancelSelectedActivity();
             this.loading = false;
          } catch (error) {
             console.log(error)
