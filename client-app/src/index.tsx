@@ -4,6 +4,7 @@ import 'semantic-ui-css/semantic.min.css';
 import './app/layout/style.css';
 import App from './app/layout/App';
 import 'react-toastify/dist/ReactToastify.min.css';
+import 'react-datepicker/dist/react-datepicker.css'
 import reportWebVitals from './reportWebVitals';
 import { StoreContext, store } from './app/stores/store';
 import { RouterProvider } from 'react-router-dom';
