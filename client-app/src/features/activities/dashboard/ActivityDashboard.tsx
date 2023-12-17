@@ -11,8 +11,28 @@ export default observer(function ActivityDashboard() {
   const {activityStore} = useStore(); 
   const {loadActivities, activityRegistry} = activityStore
 
-  useEffect(() => {
-    /*axios
+  useEffect(() => { 
+     if(activityRegistry.size <= 1) loadActivities()
+  }, [activityStore]);
+
+  if (activityStore.loadingInitial) return <LoadingComponent content="loading Activities..." />;
+
+
+  return (
+    <Grid>
+      <Grid.Column width="10">
+        <ActivityList />
+      </Grid.Column>
+
+      <Grid.Column width="6">
+         <h2>Activity Filter</h2>
+      </Grid.Column>
+    </Grid>
+  );
+})
+
+
+/*axios
         .get<Activity[]>("http://localhost:5000/api/activities")
         .then((response) => {
           console.log(response);
@@ -30,21 +50,3 @@ export default observer(function ActivityDashboard() {
       setActivities(Activities);
       setLoading(false);
     });*/
-     if(activityRegistry.size <= 1) loadActivities()
-  }, [activityStore]);
-
-  if (activityStore.loadingInitial) return <LoadingComponent content="loading app..." />;
-
-
-  return (
-    <Grid>
-      <Grid.Column width="10">
-        <ActivityList />
-      </Grid.Column>
-
-      <Grid.Column width="6">
-         <h2>Activity Filter</h2>
-      </Grid.Column>
-    </Grid>
-  );
-})

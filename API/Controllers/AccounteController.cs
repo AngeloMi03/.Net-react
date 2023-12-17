@@ -14,14 +14,14 @@ using System.Security.Claims;
 namespace API.Controllers
 {
 
-   
+
     [ApiController]
     [Route("api/[controller]")]
-    public class AccounteController : ControllerBase
+    public class AccountController : ControllerBase
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly TokenServices _tokenServices;
-        public AccounteController(UserManager<AppUser> userManager, TokenServices tokenServices)
+        public AccountController(UserManager<AppUser> userManager, TokenServices tokenServices)
         {
             _tokenServices = tokenServices;
             _userManager = userManager;
@@ -53,12 +53,14 @@ namespace API.Controllers
         {
             if (await _userManager.Users.AnyAsync(x => x.UserName == registerDto.UserName))
             {
-                return BadRequest("Username is already taken");
+                ModelState.AddModelError("username", "Username is already taken");
+                return ValidationProblem();
             }
 
             if (await _userManager.Users.AnyAsync(x => x.Email == registerDto.Email))
             {
-                return BadRequest("Email is already taken");
+                ModelState.AddModelError("email", "Email is already taken");
+                return ValidationProblem();
             }
 
             var user = new AppUser
@@ -78,7 +80,7 @@ namespace API.Controllers
             return BadRequest(result.Errors);
         }
 
-       
+
         [HttpGet]
         public async Task<ActionResult<UserDto>> GetCurrentUser()
         {
@@ -88,7 +90,7 @@ namespace API.Controllers
         }
 
 
-         private UserDto CreateUserObject(AppUser user)
+        private UserDto CreateUserObject(AppUser user)
         {
             return new UserDto
             {

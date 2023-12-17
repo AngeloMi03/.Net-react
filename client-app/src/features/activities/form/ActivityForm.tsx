@@ -36,7 +36,7 @@ export default observer (function ActivityForm()  {
   }*/
 
   const [activity, setActivity] = useState<Activity>({
-         id : "",
+        id : "",
         title : "",
         category : "",
         description : "",
@@ -46,10 +46,10 @@ export default observer (function ActivityForm()  {
     })
 
   const validationSchema =  Yup.object({
-    tilte : Yup.string().required("activity Title is required"),
-    descripion : Yup.string().required("activity descripion is required"),
+    title : Yup.string().required("Activity Title is required"),
+    description : Yup.string().required('Activity descritpion is required'),
     category : Yup.string().required(),
-    date : Yup.string().required("Date is required").nullable(),
+    date : Yup.string().required(),
     venue : Yup.string().required(),
     city : Yup.string().required(),
   })
