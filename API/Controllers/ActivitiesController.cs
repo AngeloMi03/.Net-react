@@ -43,10 +43,17 @@ namespace API.Controllers
            return HandleResult(await Mediator.Send(new Edit.Commad{Activity = activity}));
        }
 
-        [HttpDelete("{id}")]
+       [HttpDelete("{id}")]
        public async Task<IActionResult> DeleteActivity(Guid id)
        {
            return HandleResult( await Mediator.Send(new Delete.Commad{Id = id}));
+       }
+
+
+       [HttpPost("{id}/attend")]
+       public async Task<IActionResult> Atten(Guid id)
+       {
+           return HandleResult( await Mediator.Send(new UpdateAttendence.Command{Id = id}));
        }
     }
 }
