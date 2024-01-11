@@ -27,8 +27,8 @@ export default observer(function ActivityDetailedSidebar({
       <Segment attached>
         <List relaxed divided>
           {attendees.map((attendee) => (
-            <Item style={{ position: "relative" }} key={attendee.username}>
-              {attendee.username == host?.username && (
+            <Item style={{ position: "relative" }} key={attendee.userName}>
+              {attendee.userName == host?.userName && (
                 <Label
                   style={{ position: "absolute" }}
                   color="orange"
@@ -40,7 +40,7 @@ export default observer(function ActivityDetailedSidebar({
               <Image size="tiny" src={"/assets/user.png"} />
               <Item.Content verticalAlign="middle">
                 <Item.Header as="h3">
-                  <Link to={`/profile/${attendee.username}`}>
+                  <Link to={`/profile/${attendee.userName}`}>
                     {attendee.displayName}
                   </Link>
                 </Item.Header>

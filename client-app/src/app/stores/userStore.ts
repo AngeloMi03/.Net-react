@@ -54,6 +54,10 @@ export default class UserStore {
       console.log(error)
     }
   }
+
+  setMain = (image : string) => {
+    if(this.user) this.user.image = image;
+  }
 }
 
 

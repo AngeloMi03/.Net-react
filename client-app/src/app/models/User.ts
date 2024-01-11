@@ -10,5 +10,5 @@ export interface UserFormValues {
     email: string;
     password: string;
     displayname?: string;
-    username?: string;
+    userName?: string;
   }

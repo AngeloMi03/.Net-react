@@ -17,12 +17,12 @@ export default observer(function ActivityListItemAttendee({
       {attendees.map((attendee) => (
         <Popup
           hoverable
-          key={attendee.username}
+          key={attendee.userName}
           trigger={
             <List.Item
-              key={attendee.username}
+              key={attendee.userName}
               as={Link}
-              to={`/profile/${attendee.username}`}
+              to={`/profiles/${attendee.userName}`}
             >
               <Image size="mini" src={attendee.image || "/assets/user.png"} />
             </List.Item>

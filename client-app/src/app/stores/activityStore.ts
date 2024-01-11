@@ -52,8 +52,8 @@ export default class ActivityStore {
     this.setLoadingInitial(true);
     try {
       const Activities = await agent.activities.list();
-      console.log("activity store " + Activities.length);
-      Activities.forEach((activity) => {
+      Activities.forEach((activity) => { 
+        console.log("activity store " + JSON.stringify(activity));
         this.setActivity(activity);
         //this.loadingInitial = false
         this.setLoadingInitial(false);
@@ -67,12 +67,14 @@ export default class ActivityStore {
   loadActivity = async (id: string) => {
     let activity = this.getActivity(id);
     if (activity) {
+      console.log("activity details " + JSON.stringify(activity));
       this.selectedActivity = activity;
       return activity;
     } else {
       this.setLoadingInitial(true);
       try {
         activity = await agent.activities.details(id);
+        console.log("activity details 2 " + JSON.stringify(activity));
         this.setActivity(activity);
         runInAction(() => (this.selectedActivity = activity));
         this.setLoadingInitial(false);
@@ -88,11 +90,11 @@ export default class ActivityStore {
     const user = store.userStore.user;
     if (user) {
       activity.isGoing = activity.attendees?.some(
-        (a) => a.username == user.userName
+        (a) => a.userName == user.userName
       );
-      activity.isHost = activity.hostUsername == user.userName;
+      activity.isHost = activity.hostUserName == user.userName;
       activity.host = activity.attendees?.find(
-        (x) => x.username == user.userName
+        (x) => x.userName == user.userName
       );
     }
     activity.date = new Date(activity.date!);
@@ -132,7 +134,7 @@ export default class ActivityStore {
     try {
       await agent.activities.create(activity);
       var newActivity = new Activity(activity)
-      newActivity.hostUsername = user!.userName;
+      newActivity.hostUserName = user!.userName;
       newActivity.attendees= [attendee];
       this.setActivity(newActivity);
       runInAction(() => {
@@ -188,7 +190,7 @@ export default class ActivityStore {
         if (this.selectedActivity?.isGoing) {
           this.selectedActivity.attendees =
             this.selectedActivity.attendees?.filter(
-              (a) => a.username !== user?.userName
+              (a) => a.userName !== user?.userName
             );
           this.selectedActivity.isGoing = false;
         } else {
