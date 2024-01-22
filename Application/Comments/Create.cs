@@ -55,7 +55,7 @@ namespace Application.Comments
                 {
                     Author = user,
                     Activity = actitivy,
-                    body = request.Body
+                    Body = request.Body
                 };
 
                 actitivy.Comments.Add(comment);

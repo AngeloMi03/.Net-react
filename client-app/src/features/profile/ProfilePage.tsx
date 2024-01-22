@@ -9,11 +9,15 @@ import { useEffect } from "react";
 export default observer(function ProfilePage() {
   const { userName } = useParams<{ userName: string }>();
   const { profilestore } = useStore();
-  const { loadProfile, loadingProfile, profile } = profilestore;
+  const { loadProfile, loadingProfile, profile, SetActiveTab } = profilestore;
 
   useEffect(() => {
     if (userName) {
       loadProfile(userName);
+
+      return () => {
+        SetActiveTab(0);
+      }
     }
   }, [userName, loadProfile]);
 

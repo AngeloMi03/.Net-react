@@ -1,4 +1,4 @@
-import { makeAutoObservable, runInAction } from "mobx";
+import { makeAutoObservable, reaction, runInAction } from "mobx";
 import { Photo, Profile } from "../models/Profile";
 import agent from "../api/agent";
 import { store } from "./store";
@@ -7,10 +7,29 @@ export default class ProfileStore {
   profile: Profile | null = null;
   loadingProfile = false;
   uploading = false;
-  loading = false
+  loading = false;
+  loadingFollowing = false;
+  followings : Profile[] = [];
+  activeTab= 0;
 
   constructor() {
     makeAutoObservable(this);
+
+    reaction(
+      () => this.activeTab,
+      activetab => {
+        if(activetab === 3 || activetab === 4){
+          const predicate = activetab === 3 ? "followers" : "following";
+          this.loadFollowing(predicate);
+        }else{
+          this.followings = []
+        }
+      }
+    )
+  }
+
+  SetActiveTab = (activeTab : any) => {
+       this.activeTab = activeTab;
   }
 
   get IsCurrentUser() {
@@ -24,7 +43,7 @@ export default class ProfileStore {
     this.loadingProfile = true;
     try {
       const Profile = await agent.profile.get(username);
-      console.log("load profile" + JSON.stringify(Profile))
+      //console.log("load profile" + JSON.stringify(Profile));
       runInAction(() => {
         this.profile = Profile;
         this.loadingProfile = false;
@@ -43,53 +62,115 @@ export default class ProfileStore {
       runInAction(() => {
         if (this.profile) {
           this.profile.photos?.push(photo);
-          if(photo.isMain && store.userStore.user){
-             store.userStore.setMain(photo.url);
-             this.profile.image = photo.url;
+          if (photo.isMain && store.userStore.user) {
+            store.userStore.setMain(photo.url);
+            this.profile.image = photo.url;
           }
         }
         this.uploading = false;
       });
     } catch (error) {
       console.log(error);
-      runInAction(() => this.uploading = false)
+      runInAction(() => (this.uploading = false));
     }
   };
 
-  setMainPhoto = async (photo : Photo) => {
+  setMainPhoto = async (photo: Photo) => {
     this.loading = true;
     try {
       await agent.profile.setMainPhoto(photo.id);
-      store.userStore.setMain(photo.url)
+      store.userStore.setMain(photo.url);
       runInAction(() => {
-        if(this.profile && this.profile.photos){
-          this.profile.photos.find(p => p.isMain)!.isMain = false;
-          this.profile.photos.find(p => p.id === photo.id)!.isMain = true
+        if (this.profile && this.profile.photos) {
+          this.profile.photos.find((p) => p.isMain)!.isMain = false;
+          this.profile.photos.find((p) => p.id === photo.id)!.isMain = true;
           this.profile.image = photo.url;
-          this.loading = false
+          this.loading = false;
         }
-      })
+      });
     } catch (error) {
-      console.log(error)
-      runInAction(() => this.loading = false)
+      console.log(error);
+      runInAction(() => (this.loading = false));
     }
-  }
+  };
 
-
-  deletePhoto = async (photo : Photo) => {
-    this.loading = true
+  deletePhoto = async (photo: Photo) => {
+    this.loading = true;
     try {
-      await agent.profile.deletePhoto(photo.id)
+      await agent.profile.deletePhoto(photo.id);
       runInAction(() => {
-        if(this.profile){
-          this.profile.photos = this.profile.photos?.filter(p => p.id !== photo.id);
-          this.loading = false
+        if (this.profile) {
+          this.profile.photos = this.profile.photos?.filter(
+            (p) => p.id !== photo.id
+          );
+          this.loading = false;
         }
-      })
+      });
     } catch (error) {
-      runInAction(() => this.loading = false)
-      console.log(error)
+      runInAction(() => (this.loading = false));
+      console.log(error);
     }
-  }
+  };
 
+  updateFollowing = async (username: string, following: boolean) => {
+    this.loading = true;
+    console.log("profile" + this.profile?.userName)
+    console.log("param" + username)
+    try {
+      await agent.profile.updateFollowing(username);
+      store.activityStore.updateActivityFollowing(username);
+      runInAction(() => {
+        if (this.profile && this.profile.userName !== store.userStore.user?.userName &&
+          this.profile.userName === username  ) { 
+          following
+            ? this.profile.followersCount++
+            : this.profile.followersCount--;
+            this.profile.following = !this.profile.following;
+            console.log("profile following" + this.profile.following)
+        }
+
+        if (
+          this.profile &&
+          this.profile.userName === store.userStore.user?.userName 
+        ) { 
+          following
+            ? this.profile.followingCount++
+            : this.profile.followingCount--;
+
+        }
+
+        this.followings.forEach(profile => {
+          if(profile.userName === username)
+          {
+            profile.following
+            ? profile.followersCount++
+            : profile.followersCount--;
+            profile.following = !profile.following
+            console.log("profile list following" + profile.following)
+          }
+        })
+
+        this.loading = false;
+      });
+    } catch (error) {
+      console.log(error);
+      runInAction(() => (this.loading = false));
+    }
+  };
+
+
+  loadFollowing  =  async(predicate : string) => {
+      this.loadingFollowing = true;
+      try {
+        const followings = await agent.profile.listFollowings(this.profile!.userName, predicate)
+        runInAction(() => {
+          this.followings = followings;
+          this.loadingFollowing = false;
+        })
+      } catch (error) {
+        console.log(error)
+        runInAction(() => this.loadingFollowing = false);
+      }
+  }
 }
+ 

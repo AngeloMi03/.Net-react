@@ -38,6 +38,9 @@ namespace API.Extension
                         var accessToken =  context.Request.Query["access_token"];
                         var path = context.HttpContext.Request.Path;
 
+                        Console.WriteLine("path1" + path);
+                        Console.WriteLine("acess" + accessToken);
+
                         if(!string.IsNullOrEmpty(accessToken)  && path.StartsWithSegments("/chat"))
                         {
                            context.Token = accessToken;

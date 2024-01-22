@@ -32,10 +32,11 @@ namespace Application.Comments
             {
                 var comments = await _context.Comments
                    .Where(x => x.Activity.Id == request.ActivityId)
-                   .OrderBy(x => x.CreatedAt)
+                   .OrderByDescending(x => x.CreatedAt)
                   .ProjectTo<CommentsDto>(_mapper.ConfigurationProvider)
                   .ToListAsync();
 
+              Console.WriteLine("comment"+ comments);
               return Result<List<CommentsDto>>.Success(comments);
 
             }

@@ -9,9 +9,9 @@ namespace Application.Comments
     {
         public int Id { get; set; }
         public DateTime CreatedAt { get; set; }
-        public int body { get; set; }
-        public int UserName { get; set; }
-        public int DisplayName { get; set; }
-        public int Image { get; set; }
+        public string Body { get; set; }
+        public string UserName { get; set; }
+        public string DisplayName { get; set; }
+        public string Image { get; set; }
     }
 }
