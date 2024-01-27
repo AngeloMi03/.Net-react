@@ -15,9 +15,12 @@ namespace Application.Activities
 {
     public class List
     {
-        public class Query : IRequest<Result<List<ActivityDtos>>> { }
+        public class Query : IRequest<Result<PagedList<ActivityDtos>>>
+        { 
+           public PagingParams Params { get; set; }
+        }
 
-        public class Handler : IRequestHandler<Query, Result<List<ActivityDtos>>>
+        public class Handler : IRequestHandler<Query, Result<PagedList<ActivityDtos>>>
         {
             private readonly DataContext _Context;
             private readonly IMapper _mapper;
@@ -30,18 +33,27 @@ namespace Application.Activities
                 _Context = context;
             }
 
-            public async Task<Result<List<ActivityDtos>>> Handle(Query request, CancellationToken cancellationToken)
+            public async Task<Result<PagedList<ActivityDtos>>> Handle(Query request, CancellationToken cancellationToken)
             {
-                var activities = await _Context.Activities
+
+                Console.WriteLine("Params pagenumber" + request.Params.PageNumber);
+                Console.WriteLine("Params pagesize" + request.Params.PageSize);
+               
+
+                var query = _Context.Activities
                             //.Include(a => a.Attendees)
                             //.ThenInclude(a => a.AppUser)
+                            .OrderBy(a => a.Date)
                             .ProjectTo<ActivityDtos>(_mapper.ConfigurationProvider,
                                new { currentUsername = _userAccessor.GetUsername()})
-                            .ToListAsync();
+                            .AsQueryable();
 
                 //var activitiesToReturn =  _mapper.Map<List<ActivityDtos>>(activities);
 
-                return Result<List<ActivityDtos>>.Success(activities);
+                return Result<PagedList<ActivityDtos>>.Success(
+                    await PagedList<ActivityDtos>.createAsync(query, 
+                      request.Params.PageNumber, request.Params.PageSize)
+                );
             }
         }
     }

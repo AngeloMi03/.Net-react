@@ -5,6 +5,8 @@ import { v4 as uuid } from "uuid";
 import { format } from "date-fns";
 import { store } from "./store";
 import { Profile } from "../models/Profile";
+import { Pagination, PagingParams } from "../models/Pagination";
+
 
 export default class ActivityStore {
   activityRegistry = new Map<string, Activity>(); // <---v  activities :  Activity[] = []
@@ -12,6 +14,8 @@ export default class ActivityStore {
   editMode = false;
   loading = false;
   loadingInitial = false;
+  pagination : Pagination | null = null;
+  pagingParams = new PagingParams();
 
   /*equivalent of runInAction is manage this.loadingInitial in an action
      
@@ -27,6 +31,17 @@ export default class ActivityStore {
 
   constructor() {
     makeAutoObservable(this);
+  }
+
+  setPagingParams = (pagingParams : PagingParams) => {
+     this.pagingParams = pagingParams;
+  }
+
+  get axiosParams(){
+    const params = new URLSearchParams();
+    params.append("pageNumber", this.pagingParams.pageNumber.toString());
+    params.append("pageSize", this.pagingParams.pageSize.toString());
+    return params;
   }
 
   get activityByDate() {
@@ -51,30 +66,32 @@ export default class ActivityStore {
     //this.loadingInitial = true;
     this.setLoadingInitial(true);
     try {
-      const Activities = await agent.activities.list();
-      Activities.forEach((activity) => { 
-        console.log("activity store " + JSON.stringify(activity));
+      const result = await agent.activities.list(this.axiosParamssetPagingParams);
+      result.data.forEach((activity) => { 
         this.setActivity(activity);
         //this.loadingInitial = false
-        this.setLoadingInitial(false);
       });
+      this.setPagination(result.pagination);
+      this.setLoadingInitial(false);
     } catch (error) {
       console.log(error);
       this.setLoadingInitial(false);
     }
   };
 
+  setPagination = (pagination : Pagination) => {
+     this.pagination = pagination;
+  }
+
   loadActivity = async (id: string) => {
     let activity = this.getActivity(id);
     if (activity) {
-      console.log("activity details " + JSON.stringify(activity));
       this.selectedActivity = activity;
       return activity;
     } else {
       this.setLoadingInitial(true);
       try {
         activity = await agent.activities.details(id);
-        console.log("activity details 2 " + JSON.stringify(activity));
         this.setActivity(activity);
         runInAction(() => (this.selectedActivity = activity));
         this.setLoadingInitial(false);

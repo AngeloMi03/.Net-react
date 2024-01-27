@@ -17,7 +17,6 @@ export default observer(function ActivityDetailedChat({ activityId }: Props) {
   useEffect(() => {
     if (activityId) {
       commentStore.createHubConnection(activityId);
-console.log("dans connection")
     }
 
     return () => {

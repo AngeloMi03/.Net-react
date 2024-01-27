@@ -25,7 +25,7 @@ export default class CommentStore{
          .configureLogging(LogLevel.Information)
          .build();
 
-console.log(this.hubConnection + 'hubconnection ')
+         console.log(this.hubConnection + 'hubconnection ')
 
          this.hubConnection.start().catch(error => console.log("error signalR connection", error))
 
