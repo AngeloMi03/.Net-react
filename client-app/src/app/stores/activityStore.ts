@@ -1,4 +1,4 @@
-import { keys, makeAutoObservable, runInAction } from "mobx";
+import { makeAutoObservable, reaction, runInAction } from "mobx";
 import { Activity, ActivityFormValues } from "../models/Activity";
 import agent from "../api/agent";
 import { v4 as uuid } from "uuid";
@@ -16,6 +16,7 @@ export default class ActivityStore {
   loadingInitial = false;
   pagination : Pagination | null = null;
   pagingParams = new PagingParams();
+  predicate = new Map().set("all", true);
 
   /*equivalent of runInAction is manage this.loadingInitial in an action
      
@@ -31,16 +32,63 @@ export default class ActivityStore {
 
   constructor() {
     makeAutoObservable(this);
+
+    reaction(
+      () => this.predicate.keys(),
+      () => {
+         this.pagingParams =  new PagingParams();
+         this.activityRegistry.clear();
+         this.loadActivities();
+      }
+    )
   }
 
   setPagingParams = (pagingParams : PagingParams) => {
      this.pagingParams = pagingParams;
   }
 
+  setPredicate = (predicate : string, value : string | Date) => {
+     const resetPredicate = () => {
+       this.predicate.forEach((value, key) => {
+          if(key !== 'startDate') this.predicate.delete(key);
+          console.log(this.predicate.get(key))
+       })
+     }
+
+     switch(predicate){
+       case 'all' :
+           resetPredicate()
+           this.predicate.set("all", true)
+
+           break;
+       case 'isGoing' :
+          resetPredicate()
+          this.predicate.set("isGoing", true)
+          break;
+       case 'isHost' :
+            resetPredicate()
+            this.predicate.set("isHost", true)
+         break;
+       case 'startDate' :
+          this.predicate.delete("startDate"); //if we set the value directly, react don't trigger the change detection to update
+          this.predicate.set("startDate", value)
+       break;
+     }
+  }
+
   get axiosParams(){
     const params = new URLSearchParams();
     params.append("pageNumber", this.pagingParams.pageNumber.toString());
     params.append("pageSize", this.pagingParams.pageSize.toString());
+
+    this.predicate.forEach((value, key) => {
+       if(key == 'startDate'){
+         params.append(key, (value as Date).toISOString())
+       }else{
+         params.append(key, value)
+       }
+    })
+
     return params;
   }
 
@@ -66,7 +114,7 @@ export default class ActivityStore {
     //this.loadingInitial = true;
     this.setLoadingInitial(true);
     try {
-      const result = await agent.activities.list(this.axiosParamssetPagingParams);
+      const result = await agent.activities.list(this.axiosParams);
       result.data.forEach((activity) => { 
         this.setActivity(activity);
         //this.loadingInitial = false
